@@ -5,6 +5,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { PerformanceMonitor, useProgress } from '@react-three/drei';
 import Ring, { FOV } from './Ring';
 import { stage } from '@/lib/stage-store';
+import { SMALL_POSTERS } from '@/content/stories';
 
 /** Render continuously only while something on the stage can move; otherwise draw one last frame and rest. */
 function FrameLoop() {
@@ -39,7 +40,9 @@ function Progress() {
 }
 
 export default function Stage() {
-  const [dpr, setDpr] = useState<[number, number]>([1, 1.75]);
+  // Phones cap the canvas resolution lower: a full-screen antialiased buffer at 1.75x is a big share of iOS's budget.
+  const [maxDpr] = useState(() => (window.matchMedia(SMALL_POSTERS).matches ? 1.5 : 1.75));
+  const [dpr, setDpr] = useState<[number, number]>([1, maxDpr]);
   // Client-only component (loaded with ssr: false), so the DOM is available on first render.
   const [source] = useState<HTMLElement | null>(() => document.getElementById('app'));
 
@@ -58,7 +61,7 @@ export default function Stage() {
       camera={{ fov: FOV, near: 0.1, far: 100, position: [0, 1, 8.5] }}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <PerformanceMonitor onDecline={() => setDpr([1, 1.15])} onIncline={() => setDpr([1, 1.75])} />
+      <PerformanceMonitor onDecline={() => setDpr([1, 1.15])} onIncline={() => setDpr([1, maxDpr])} />
       <FrameLoop />
       <Progress />
       <Suspense fallback={null}>

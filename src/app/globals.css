@@ -116,6 +116,16 @@ html.lenis body {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.08 0 0 0 1.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     mix-blend-mode: multiply;
   }
+  /* Phones: a viewport-sized layer with no blend mode. At inset -50% the layer is four screens of pixels, and multiply
+     makes iOS keep an extra copy of everything under it; together they cost tens of MB a tab can't spare. At this
+     opacity the near-black grain looks the same over paper either way. */
+  @media (hover: none), (pointer: coarse) {
+    .grain {
+      inset: 0 0 auto;
+      height: 100lvh;
+      mix-blend-mode: normal;
+    }
+  }
 
   .eyebrow {
     font-family: var(--font-sans);

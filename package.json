@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "posters": "node scripts/render-posters.mjs",
+    "posters": "node scripts/render-posters.mjs && node scripts/poster-sizes.mjs",
     "films": "node scripts/render-films.mjs",
     "reel": "node scripts/render-collection-reel.mjs",
     "images:meta": "node scripts/image-meta.mjs"

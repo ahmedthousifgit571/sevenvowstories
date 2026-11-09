@@ -8,7 +8,7 @@ import { useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { useRouter } from 'next/navigation';
-import { stories, posterSrc, posterBackSrc } from '@/content/stories';
+import { stories, posterSrc, posterBackSrc, posterSmSrc, posterBackSmSrc, SMALL_POSTERS } from '@/content/stories';
 import { stage, live, RING, chapterPosterRect, type Rect } from '@/lib/stage-store';
 import { gsap } from '@/lib/gsap';
 import { applyPageBg, hexToRgb } from '@/lib/theme';
@@ -93,7 +93,11 @@ export default function Ring() {
   const router = useRouter();
   const { camera, invalidate } = useThree();
 
-  const urls = useMemo(() => stories.flatMap((s) => [posterSrc(s), posterBackSrc(s)]), []);
+  // Client-only (the stage loads with ssr: false). Phones get half-size textures: a quarter of the GPU memory.
+  const urls = useMemo(() => {
+    const small = window.matchMedia(SMALL_POSTERS).matches;
+    return stories.flatMap((s) => (small ? [posterSmSrc(s), posterBackSmSrc(s)] : [posterSrc(s), posterBackSrc(s)]));
+  }, []);
   const textures = useTexture(urls);
   useMemo(() => {
     textures.forEach((t) => {
@@ -135,10 +139,12 @@ export default function Ring() {
 
   // Story text: two canvases cross-wiped by the text shader.
   const text = useMemo(() => {
+    // A phone draws the line ~500 device px wide, so half the canvas is still sharp (and a quarter of the memory).
+    const k = window.matchMedia('(max-width: 767px)').matches ? 0.5 : 1;
     const make = () => {
       const c = document.createElement('canvas');
-      c.width = TEXT_CANVAS.w;
-      c.height = TEXT_CANVAS.h;
+      c.width = TEXT_CANVAS.w * k;
+      c.height = TEXT_CANVAS.h * k;
       const t = new THREE.CanvasTexture(c);
       t.colorSpace = THREE.NoColorSpace;
       t.anisotropy = 8;

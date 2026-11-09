@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ArrowDownRight } from 'lucide-react';
 import { gsap, liveWhileCentred, MOTION_OK, ScrollTrigger, useGSAP } from '@/lib/gsap';
 import { live, openStory, useStage } from '@/lib/stage-store';
-import { posterSrc, stories } from '@/content/stories';
+import { posterSmSrc, posterSrc, SMALL_POSTERS, stories } from '@/content/stories';
 
 // Slot positions. Desktop: left %, top vw, width vw, with a parallax speed each.
 // Phone: two staggered columns (left %, top in rows of the phone pitch, width vw); each column drifts at its own speed,
@@ -197,19 +197,23 @@ export default function Lookbook() {
                   className="lb-tilt relative aspect-[3/4] w-full will-change-transform [transform-style:preserve-3d]"
                   style={{ opacity: showCards ? 1 : 0 }}
                 >
-                  <Image
-                    src={posterSrc(s)}
-                    alt=""
-                    width={1200}
-                    height={1600}
-                    unoptimized
-                    loading="eager"
-                    className={`h-full w-full object-cover transition-shadow delay-150 duration-1000 ${
-                      showCards
-                        ? 'shadow-[0_40px_80px_-40px_rgba(30,20,10,0.45)] group-hover:shadow-[0_50px_90px_-35px_rgba(30,20,10,0.55)] group-[.is-live]:shadow-[0_50px_90px_-35px_rgba(30,20,10,0.55)]'
-                        : 'shadow-none'
-                    }`}
-                  />
+                  {/* Phones take the half-size poster the WebGL ring already loaded (same query, same file). */}
+                  <picture className="block h-full w-full">
+                    <source media={SMALL_POSTERS} srcSet={posterSmSrc(s)} />
+                    <Image
+                      src={posterSrc(s)}
+                      alt=""
+                      width={1200}
+                      height={1600}
+                      unoptimized
+                      loading="eager"
+                      className={`h-full w-full object-cover transition-shadow delay-150 duration-1000 ${
+                        showCards
+                          ? 'shadow-[0_40px_80px_-40px_rgba(30,20,10,0.45)] group-hover:shadow-[0_50px_90px_-35px_rgba(30,20,10,0.55)] group-[.is-live]:shadow-[0_50px_90px_-35px_rgba(30,20,10,0.55)]'
+                          : 'shadow-none'
+                      }`}
+                    />
+                  </picture>
                 </div>
                 <div
                   className="mt-4 flex items-start justify-between gap-3 transition-[opacity,transform] duration-1000 ease-[var(--ease-vow)]"

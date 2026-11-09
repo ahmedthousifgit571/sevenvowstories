@@ -10,8 +10,11 @@ let support: boolean | null = null;
 function hasWebGL() {
   if (support != null) return support;
   try {
-    const c = document.createElement('canvas');
-    support = !!(c.getContext('webgl2') || c.getContext('webgl'));
+    // three.js (r163+) needs WebGL 2; a WebGL 1-only browser would throw inside the Canvas and blank the page.
+    const gl = document.createElement('canvas').getContext('webgl2');
+    support = !!gl;
+    // Free the probe context straight away: phones allow only a few live contexts and little GPU memory.
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
   } catch {
     support = false;
   }

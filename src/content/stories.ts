@@ -433,6 +433,14 @@ export const stories: Story[] = [
 
 export const posterSrc = (s: Story) => `/posters/vow-${s.index + 1}.webp`;
 export const posterBackSrc = (s: Story) => `/posters/back-${s.index + 1}.webp`;
+/**
+ * Phones and tablets: half-size posters (public/posters/sm, from `npm run posters`). The ring keeps all fourteen
+ * as GPU textures, and at full size iOS Safari runs out of memory and kills the tab. The lookbook uses the same
+ * query, so the DOM posters it hands off to are the very files the ring already loaded.
+ */
+export const SMALL_POSTERS = '(max-width: 767px), (hover: none), (pointer: coarse)';
+export const posterSmSrc = (s: Story) => `/posters/sm/vow-${s.index + 1}.webp`;
+export const posterBackSmSrc = (s: Story) => `/posters/sm/back-${s.index + 1}.webp`;
 export const filmSrc = (s: Story) => `/films/vow-${s.index + 1}.mp4`;
 export const filmPreviewSrc = (s: Story) => `/films/vow-${s.index + 1}-preview.mp4`;
 export const filmStillSrc = (s: Story) => `/films/vow-${s.index + 1}.webp`;
