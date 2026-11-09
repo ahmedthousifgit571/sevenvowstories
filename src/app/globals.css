@@ -1,0 +1,329 @@
+@import "tailwindcss";
+
+@custom-variant touch {
+  @media (hover: none), (pointer: coarse) {
+    @slot;
+  }
+}
+@custom-variant fine {
+  @media (hover: hover) and (pointer: fine) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --font-display: var(--nf-six), 'Arial Narrow', sans-serif;
+  --font-sans: var(--nf-jost), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--nf-cormorant), Georgia, serif;
+  --font-deva: var(--nf-tiro), serif;
+
+  --color-paper: #f5f1ea;
+  --color-paper-deep: #ebe5da;
+  --color-night: #15141a;
+  --color-ink: var(--ink);
+  --color-accent: var(--accent);
+  --color-tint: var(--tint);
+  --color-page: var(--page-bg);
+
+  --ease-vow: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-vow-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+:root {
+  --ink: #7a2e0e;
+  --accent: #e0861e;
+  --tint: #f8e6c2;
+  --page-bg: #f5f1ea;
+  --gutter: clamp(1rem, 4.2vw, 4.75rem);
+  color-scheme: light;
+}
+
+html {
+  background: var(--page-bg);
+  -webkit-text-size-adjust: 100%;
+  /* Nothing may widen the page sideways: a phone would zoom the whole site out to fit it. */
+  overflow-x: clip;
+}
+
+body {
+  background: var(--page-bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--tint);
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Custom cursor replaces the system one on fine pointers */
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor,
+  html.has-cursor * {
+    cursor: none !important;
+  }
+  html.has-cursor input[type='text'],
+  html.has-cursor input[type='email'],
+  html.has-cursor input[type='tel'],
+  html.has-cursor input[type='date'],
+  html.has-cursor input[type='number'],
+  html.has-cursor textarea {
+    cursor: text !important;
+  }
+}
+
+:focus-visible {
+  outline: 1.5px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+/* The concierge is dark: rings in its marigold, and its fields draw their own focus line instead. */
+#concierge :focus-visible {
+  outline-color: var(--c-accent, currentColor);
+}
+#concierge input:focus-visible,
+#concierge textarea:focus-visible {
+  outline: none;
+}
+
+@layer components {
+  /* Paper grain over everything, like printed stock */
+  .grain {
+    position: fixed;
+    inset: -50%;
+    z-index: 70;
+    pointer-events: none;
+    opacity: 0.075;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.1 0 0 0 0 0.09 0 0 0 0 0.08 0 0 0 1.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+  }
+
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .nav-link {
+    font-family: var(--font-sans);
+    font-size: clamp(0.78rem, 0.7rem + 0.25vw, 1rem);
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    position: relative;
+  }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.3em;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.6s var(--ease-vow);
+  }
+  @media (hover: hover) {
+    .nav-link:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+  .nav-link[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  /* Collection: cards rise in as they reach the viewport (IntersectionObserver adds .is-in) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(34px);
+    transition:
+      opacity 1s var(--ease-vow),
+      transform 1.2s var(--ease-vow);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Ultra-condensed story set: big words with small connector words */
+  .story-set {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    line-height: 0.98;
+    letter-spacing: 0.005em;
+  }
+  .story-set .sm {
+    font-size: 0.34em;
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* Section headings: Cormorant Garamond set large in sentence case, with an italic accent in <em>.
+     The condensed display face (Six Caps) is kept for the ring's story text only. */
+  .headline {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 0.94;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+  .headline em {
+    font-style: italic;
+    letter-spacing: -0.012em;
+  }
+
+  .serif-italic {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .btn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-radius: 999px;
+    padding: 0.95rem 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition:
+      background-color 0.5s var(--ease-vow),
+      color 0.5s var(--ease-vow),
+      transform 0.5s var(--ease-vow);
+  }
+
+  .sprockets {
+    background-image: radial-gradient(circle at 50% 50%, rgba(245, 241, 234, 0.85) 0 34%, transparent 36%);
+    background-size: 26px 100%;
+    background-repeat: repeat-x;
+  }
+
+  .hairline {
+    height: 1px;
+    background: currentColor;
+    opacity: 0.25;
+  }
+
+  /* Lookbook slots: phone layout first, desktop scatter from md.
+     Phones stack two staggered columns. --lb-h0 clears the heading, and --lb-p is one row: a 42vw poster (56vw tall)
+     plus room for its caption, which wraps to more lines on narrow phones and so gets more rem there. */
+  .lb-section {
+    --lb-h0: max(calc(6vw + 10rem), calc(24vw + 4.5rem));
+    --lb-p: calc(56vw + clamp(7.5rem, 15rem - 16vw, 10.5rem));
+    height: calc(var(--lb-h0) + var(--lb-p) * 4.45 + 19rem);
+  }
+  .lb-slot {
+    left: var(--lm);
+    top: calc(var(--lb-h0) + var(--lb-p) * var(--tm));
+    width: var(--wm);
+  }
+  .lb-outro {
+    top: calc(var(--lb-h0) + var(--lb-p) * 4.45 + 1.5rem);
+  }
+  @media (min-width: 768px) {
+    .lb-section {
+      height: 146vw;
+    }
+    .lb-slot {
+      left: var(--l);
+      top: var(--t);
+      width: var(--w);
+    }
+    .lb-outro {
+      top: 108vw;
+    }
+  }
+}
+
+@keyframes hint {
+  0% {
+    transform: translateY(-100%);
+  }
+  60%,
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes halo {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes eq {
+  from {
+    transform: scaleY(0.25);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
