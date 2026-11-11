@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { ArrowUpRight, Play } from 'lucide-react';
-import { gsap, MOTION_OK, useGSAP } from '@/lib/gsap';
+import { gsap, MOTION_OK, quickScale, useGSAP } from '@/lib/gsap';
 import { openFilm } from '@/lib/stage-store';
 import { filmPreviewSrc, filmStillSrc, stories } from '@/content/stories';
 import { site } from '@/content/site';
@@ -65,7 +65,7 @@ export default function FilmReel() {
         vp.scrollLeft = 0;
         gsap.set(stills, { scale: 1.12 });
         const set = frames.map((f, i) => ({
-          s: gsap.quickSetter(f, 'scale'),
+          s: quickScale(f),
           o: gsap.quickSetter(f, 'opacity'),
           x: gsap.quickSetter(stills[i], 'xPercent'),
         }));

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ArrowDownRight } from 'lucide-react';
-import { gsap, liveWhileCentred, MOTION_OK, ScrollTrigger, useGSAP } from '@/lib/gsap';
+import { gsap, liveWhileCentred, MOTION_OK, quickScale, ScrollTrigger, useGSAP } from '@/lib/gsap';
 import { live, openStory, useStage } from '@/lib/stage-store';
 import { posterSmSrc, posterSrc, SMALL_POSTERS, stories } from '@/content/stories';
 
@@ -101,7 +101,7 @@ export default function Lookbook() {
         const set = tilts.map((t) => ({
           rx: gsap.quickSetter(t, 'rotationX', 'deg'),
           ry: gsap.quickSetter(t, 'rotationY', 'deg'),
-          s: gsap.quickSetter(t, 'scale'),
+          s: quickScale(t),
         }));
         const update = (self: ScrollTrigger) => {
           const vw = window.innerWidth;

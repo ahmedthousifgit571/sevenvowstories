@@ -20,6 +20,20 @@ export function prefersReducedMotion() {
   return typeof window !== 'undefined' && !window.matchMedia(MOTION_OK).matches;
 }
 
+/**
+ * A quickSetter for uniform scale. Never call gsap.quickSetter(el, 'scale'): GSAP resolves 'scale' to its alias
+ * "scaleX,scaleY", finds no such CSS property and falls back to el.setAttribute('scaleX,scaleY', …). Chrome accepts
+ * that name and does nothing; Safari (every iPhone browser) throws InvalidCharacterError and the page crashes.
+ */
+export function quickScale(target: Element) {
+  const sx = gsap.quickSetter(target, 'scaleX');
+  const sy = gsap.quickSetter(target, 'scaleY');
+  return (v: number) => {
+    sx(v);
+    sy(v);
+  };
+}
+
 // Touch screens have no hover, so a card shows its hover look while it crosses the middle of the screen.
 export function liveWhileCentred(targets: Element[]) {
   return targets.map((trigger) => ScrollTrigger.create({ trigger, start: 'top 62%', end: 'bottom 38%', toggleClass: 'is-live' }));
