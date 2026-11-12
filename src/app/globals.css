@@ -104,6 +104,10 @@ html.lenis body {
 #concierge textarea:focus-visible {
   outline: none;
 }
+/* The films are dark too: rings in paper. */
+#films :focus-visible {
+  outline-color: #f5f1ea;
+}
 
 @layer components {
   /* Paper grain over everything, like printed stock */
@@ -282,6 +286,404 @@ html.lenis body {
     }
     .lb-outro {
       top: 108vw;
+    }
+  }
+
+  /* Collection hero (CollectionHero): the collection's name set huge, with a wall of weddings rising over it. Phones
+     show two columns (b, c), tablets three (a to c), desktops all five with the outer two cropped by the screen. Each
+     column starts at its own height; the wall is pulled up so the middle column overlaps the foot of the name. */
+  .cw {
+    position: relative;
+    overflow: hidden;
+    overflow: clip;
+    /* Clears the phone bar; on desktops the overlay header. */
+    padding-top: calc(4rem + clamp(2rem, 7vh, 3.5rem));
+  }
+  .cw-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-inline: var(--gutter);
+  }
+  .cw-tagline {
+    max-width: 21rem;
+    font-family: var(--font-sans);
+    font-size: clamp(1.05rem, 0.92rem + 0.5vw, 1.4rem);
+    line-height: 1.3;
+  }
+  .cw-mark {
+    position: relative;
+    margin-top: clamp(1.5rem, 4.5vh, 2.75rem);
+    /* The mask the name rises through. */
+    overflow: hidden;
+    padding-top: 0.05em;
+    font-family: var(--font-sans);
+    font-size: 17.4vw;
+    font-weight: 600;
+    line-height: 0.82;
+    letter-spacing: -0.015em;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .cw-mark-inner {
+    display: block;
+  }
+  .cw-wall {
+    --cw-gap: 0.55rem;
+    --cw-w: calc((100vw - 1.5rem - var(--cw-gap)) / 2);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: var(--cw-gap);
+    margin-top: -5vw;
+    padding-bottom: clamp(3.5rem, 9vh, 6rem);
+  }
+  .cw-col {
+    flex: 0 0 var(--cw-w);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1.25rem, 2.2vw, 2rem);
+  }
+  .cw-col[data-col='e1'],
+  .cw-col[data-col='a'],
+  .cw-col[data-col='e2'] {
+    display: none;
+  }
+  .cw-col[data-col='c'] {
+    margin-top: 26vw;
+  }
+  .cw-media {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #e7e0d4;
+  }
+  .cw-img {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  .cw-cap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.15rem 0.75rem;
+    margin-top: 0.65rem;
+    font-family: var(--font-sans);
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .cw-cap-name {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.6s var(--ease-vow);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .group:hover .cw-cap-name {
+      background-size: 100% 1px;
+    }
+  }
+  @media (min-width: 640px) {
+    .cw-wall {
+      --cw-gap: 0.75rem;
+      --cw-w: calc((100vw - 2rem - 2 * var(--cw-gap)) / 3);
+    }
+    .cw-col[data-col='a'] {
+      display: flex;
+    }
+    .cw-col[data-col='a'],
+    .cw-col[data-col='c'] {
+      margin-top: 15vw;
+    }
+  }
+  @media (min-width: 768px) {
+    .cw-intro {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+  }
+  @media (min-width: 1024px) {
+    .cw {
+      padding-top: clamp(8.75rem, 19vh, 11rem);
+    }
+    .cw-mark {
+      font-size: min(16.6vw, 33svh);
+    }
+    .cw-wall {
+      --cw-gap: 0.75vw;
+      --cw-w: 25vw;
+      margin-top: -5.5vw;
+    }
+    .cw-col[data-col='e1'],
+    .cw-col[data-col='e2'] {
+      display: flex;
+      margin-top: 8vw;
+    }
+    .cw-col[data-col='a'],
+    .cw-col[data-col='c'] {
+      margin-top: 17vw;
+    }
+    .cw-cap {
+      font-size: 0.7rem;
+    }
+  }
+
+  /* Films (FilmReel): a statement develops out of a halftone screen, then the seven films are dealt onto it as
+     prints. --pw is one print's width: as wide as the screen allows while the pile stays under half its height
+     (svh, so the pile still fits while a phone's toolbars are showing). */
+  .fs-section {
+    --pw: min(84vw, 58svh);
+    --glow: #5c2a17;
+    background-image: radial-gradient(120% 95% at 50% 50%, transparent 52%, rgba(0, 0, 0, 0.5));
+    /* clip, not hidden: a hidden box can still be scrolled, and tabbing to a print waiting below the edge would
+       scroll the whole scene up inside it. */
+    overflow: hidden;
+    overflow: clip;
+  }
+  .fs-glow {
+    background: radial-gradient(58% 54% at 50% 50%, var(--glow), transparent 72%);
+  }
+  .fs-grain {
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .96 0 0 0 0 .9 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .fs-stage {
+    height: 100lvh;
+  }
+  .fs-copy {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+  }
+  .fs-head {
+    position: relative;
+  }
+  .fs-eyebrow {
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(100% + clamp(1.25rem, 4svh, 2.75rem));
+    text-align: center;
+  }
+  .fs-sub {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + clamp(1.25rem, 4svh, 2.5rem));
+    width: min(32rem, 84vw);
+    translate: -50% 0;
+    text-align: center;
+  }
+
+  /* The statement. Each line is two copies: a halftone (text-clipped dots, sized in em so the screen scales with the
+     type) and the solid line over it, revealed by a slanted wipe as GSAP runs --p from 0 to 118. */
+  .fs-title {
+    font-size: min(16vw, 14svh);
+    line-height: 0.92;
+  }
+  .fs-line {
+    position: relative;
+    display: block;
+    width: max-content;
+    margin-inline: auto;
+    /* The copies are padded for italic overhang and descenders; this takes the padding back out of the spacing. */
+    margin-bottom: -0.16em;
+  }
+  .fs-line:last-child {
+    margin-bottom: 0;
+  }
+  .fs-dots,
+  .fs-ink {
+    display: block;
+    padding: 0 0.08em 0.16em;
+    white-space: nowrap;
+  }
+  .fs-dots {
+    --dot: max(3px, 0.034em);
+    color: transparent;
+    background-image: radial-gradient(
+      circle at center,
+      var(--dot-c, rgba(245, 241, 234, 0.5)) 0 calc(var(--dot) * 0.2),
+      transparent calc(var(--dot) * 0.29)
+    );
+    background-size: var(--dot) var(--dot);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  .fs-ink {
+    --p: 118;
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(-8% -22%, calc(var(--p) * 1%) -22%, calc((var(--p) - 18) * 1%) 128%, -8% 128%);
+  }
+  .fs-line-accent .fs-dots {
+    --dot-c: color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+  .fs-line-accent .fs-ink {
+    color: var(--accent);
+  }
+
+  /* The prints */
+  .fs-prints {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    pointer-events: none;
+  }
+  .fs-print {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--pw);
+    pointer-events: auto;
+  }
+  .fs-card {
+    /* Caption type is sized in cqw, so a print reads the same wherever it is laid out. */
+    container-type: inline-size;
+  }
+  .fs-paper {
+    position: relative;
+    display: block;
+    padding: 2.6% 2.6% 0;
+    border-radius: 2px;
+    color: #2b2a33;
+    background: linear-gradient(162deg, #f8f3ea 0%, #f0e9dd 55%, #e8dfd0 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 36px 64px -28px rgba(0, 0, 0, 0.8),
+      0 10px 22px -10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.7s var(--ease-vow);
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .fs-card:hover .fs-paper {
+      transform: translateY(-1.6%) rotate(calc(var(--rest) * -0.5)) scale(1.012);
+    }
+  }
+  .fs-video {
+    opacity: 0;
+    transition: opacity 0.9s var(--ease-vow);
+  }
+  .fs-video[data-on] {
+    opacity: 1;
+  }
+  .fs-caption {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.8em;
+    padding: 0.9em 0.3em 1em;
+    font-size: clamp(11px, 2.7cqw, 18px);
+  }
+  .fs-cap-eyebrow {
+    font-size: max(9px, 0.62em);
+  }
+  .fs-cap-title {
+    margin-top: 0.2em;
+    font-size: 1.6em;
+    line-height: 1.05;
+  }
+  .fs-cap-meta {
+    margin-top: 0.35em;
+    font-family: var(--font-sans);
+    font-size: max(10px, 0.78em);
+    opacity: 0.68;
+  }
+  /* The eighth print: unexposed film with a warm light leak. */
+  .fs-blank {
+    background:
+      radial-gradient(90% 120% at 18% 10%, rgba(224, 134, 30, 0.38), transparent 55%),
+      radial-gradient(80% 110% at 88% 95%, rgba(135, 49, 49, 0.55), transparent 60%),
+      #1a1517;
+  }
+  .fs-blank-title {
+    font-size: clamp(1.25rem, 6.4cqw, 2.6rem);
+    line-height: 1.05;
+  }
+  /* Film index, under the pile (its height is about 0.75 of its width). */
+  .fs-index {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: calc(50% + var(--pw) * 0.39 + clamp(1.25rem, 4.5svh, 3rem));
+    translate: -50% 0;
+  }
+  @media (max-height: 520px) {
+    .fs-index {
+      display: none;
+    }
+  }
+  @media (min-width: 768px) {
+    .fs-section {
+      --pw: min(58vw, 58svh);
+    }
+    .fs-title {
+      font-size: min(12.5vw, 15svh);
+    }
+  }
+  @media (min-width: 1024px) {
+    .fs-section {
+      --pw: min(40vw, 62svh);
+    }
+    .fs-title {
+      font-size: min(10.5vw, 17svh);
+    }
+  }
+
+  /* Reduced motion: nothing pins. The statement is set solid and the prints are laid out flat. */
+  @media (prefers-reduced-motion: reduce) {
+    .fs-stage {
+      height: auto;
+      padding: clamp(5rem, 12vh, 8rem) var(--gutter);
+    }
+    .fs-copy,
+    .fs-head,
+    .fs-eyebrow,
+    .fs-sub,
+    .fs-prints,
+    .fs-print {
+      position: static;
+    }
+    .fs-copy {
+      display: block;
+      text-align: center;
+    }
+    .fs-eyebrow {
+      margin-bottom: 2rem;
+    }
+    .fs-sub {
+      translate: none;
+      margin: 2rem auto 0;
+    }
+    .fs-dots {
+      visibility: hidden;
+    }
+    .fs-ink {
+      clip-path: none;
+    }
+    .fs-prints {
+      display: grid;
+      gap: clamp(2rem, 4vw, 3rem);
+      margin-top: clamp(3rem, 8vh, 5rem);
+      pointer-events: auto;
+    }
+    .fs-print {
+      width: auto;
+      rotate: var(--rest);
+    }
+    .fs-index {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) and (min-width: 640px) {
+    .fs-prints {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (prefers-reduced-motion: reduce) and (min-width: 1024px) {
+    .fs-prints {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 }

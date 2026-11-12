@@ -1,44 +1,128 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Pause, Play } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowDown, ArrowUpRight, Pause, Play } from 'lucide-react';
 import { gsap, MOTION_OK, useGSAP } from '@/lib/gsap';
 import { live } from '@/lib/stage-store';
-import { collectionMeta } from '@/content/collection';
+import { collectionMeta, shortCity, weddingBySlug, weddings } from '@/content/collection';
+import { coverSizes } from './WeddingCard';
+import { C, rememberGridScroll } from './shared';
 
-const PORTRAIT = '(max-aspect-ratio: 4/5)';
+type Cell = { slug: string; frame: number; aspect: number } | { reel: true; aspect: number };
+type Column = {
+  id: 'e1' | 'a' | 'b' | 'c' | 'e2';
+  cells: Cell[];
+  /** How far the column trails the scroll (negative runs ahead of it), and how long it takes to settle (s). */
+  lag: [number, number];
+};
 
-/** Full-bleed showreel with the collection's title set over it, as a fashion house opens a season. */
-export default function CollectionHero({ onScrollDown }: { onScrollDown: () => void }) {
-  const ref = useRef<HTMLElement>(null);
+/**
+ * The wall. Every wedding appears once, with the showreel at the heart of it. Frames are chosen to differ from the
+ * covers in the grid below and from the photographs the reel is cut from (scripts/render-collection-reel.mjs), so the
+ * same picture never sits twice in view; Simran & Arjun keep their cover because their other frame opens the reel.
+ * Phones show columns b and c, tablets a to c, and desktops all five, the outer two running off the edges of the
+ * screen. Moments of the day sit in the middle columns; places and textures at the edges.
+ */
+const WALL: Column[] = [
+  {
+    id: 'e1',
+    lag: [0.5, 0.8],
+    cells: [
+      { slug: 'sanya-and-neel', frame: 3, aspect: 3 / 4 },
+      { slug: 'diya-and-aarav', frame: 1, aspect: 2 / 3 },
+    ],
+  },
+  {
+    id: 'a',
+    lag: [1.3, 1.05],
+    cells: [
+      { slug: 'aanya-and-kabir', frame: 2, aspect: 4 / 5 },
+      { slug: 'nila-and-karthik', frame: 3, aspect: 2 / 3 },
+      { slug: 'mira-and-jai', frame: 1, aspect: 3 / 4 },
+    ],
+  },
+  {
+    id: 'b',
+    lag: [-0.35, 0.7],
+    cells: [
+      { reel: true, aspect: 4 / 5 },
+      { slug: 'simran-and-arjun', frame: 0, aspect: 3 / 4 },
+      { slug: 'isha-and-rohan', frame: 2, aspect: 2 / 3 },
+    ],
+  },
+  {
+    id: 'c',
+    lag: [0.95, 0.95],
+    cells: [
+      { slug: 'pooja-and-nikhil', frame: 1, aspect: 2 / 3 },
+      { slug: 'ananya-and-siddharth', frame: 1, aspect: 4 / 5 },
+      { slug: 'tara-and-vikram', frame: 1, aspect: 3 / 4 },
+    ],
+  },
+  {
+    id: 'e2',
+    lag: [0.25, 0.85],
+    cells: [
+      { slug: 'meera-and-arjun', frame: 3, aspect: 3 / 4 },
+      { slug: 'riya-and-dev', frame: 2, aspect: 2 / 3 },
+    ],
+  },
+];
+
+/** Tile width in vw at desktop (lg) and below, for image sizes. */
+const TILE_VW = { lg: 25, base: 48 };
+
+function WeddingTile({ slug, frame, aspect, eager }: { slug: string; frame: number; aspect: number; eager: boolean }) {
+  const w = weddingBySlug(slug);
+  if (!w) return null;
+  const f = w.frames[frame] ?? w.frames[0];
+  const place = shortCity(w);
+  return (
+    <li className="cw-tile">
+      <Link
+        href={`/collection/${w.slug}`}
+        onClick={rememberGridScroll}
+        data-cursor="view"
+        data-cursor-label="View"
+        aria-label={`${w.couple}, ${place}: view the wedding`}
+        className="group block"
+      >
+        <span className="cw-media" style={{ aspectRatio: aspect }}>
+          <span className="cw-img">
+            <Image
+              src={f.src}
+              alt={f.caption}
+              fill
+              sizes={coverSizes(f, TILE_VW, aspect)}
+              loading={eager ? 'eager' : 'lazy'}
+              className="object-cover transition-[scale] duration-[1.6s] ease-vow fine:group-hover:scale-[1.045]"
+            />
+          </span>
+        </span>
+        <span className="cw-cap">
+          <span className="cw-cap-name">{w.couple}</span>
+          <span className="opacity-50">{place}</span>
+        </span>
+      </Link>
+    </li>
+  );
+}
+
+/** The showreel as one tile of the wall: it plays where the photographs are, and opens the films. */
+function ReelTile({ aspect, onFilms }: { aspect: number; onFilms: () => void }) {
   const video = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [shown, setShown] = useState(false);
   const { reel } = collectionMeta;
 
-  // Autoplay only when motion is welcome; the still stays otherwise.
+  // Autoplay only when motion is welcome; the still stays otherwise. Asked of the browser directly: on a first load
+  // this runs before the scroll provider has filled in live.reduced.
   useEffect(() => {
-    const v = video.current;
-    if (!v || live.reduced) return;
-    v.play().catch(() => undefined);
+    if (!window.matchMedia(MOTION_OK).matches) return;
+    video.current?.play().catch(() => undefined);
   }, []);
-
-  useGSAP(
-    () => {
-      const el = ref.current;
-      if (!el) return;
-      const mm = gsap.matchMedia();
-      mm.add(MOTION_OK, () => {
-        gsap.fromTo(el.querySelectorAll('.hero-in'), { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, stagger: 0.12, ease: 'vow', delay: 0.25 });
-        gsap.to(el.querySelector('.hero-media'), {
-          yPercent: 14,
-          ease: 'none',
-          scrollTrigger: { trigger: el, start: 'top top', end: 'bottom top', scrub: true },
-        });
-      });
-    },
-    { scope: ref },
-  );
 
   const toggle = () => {
     const v = video.current;
@@ -48,72 +132,165 @@ export default function CollectionHero({ onScrollDown }: { onScrollDown: () => v
   };
 
   return (
-    <section
-      ref={ref}
-      data-tone="dark"
-      aria-label={collectionMeta.title}
-      className="relative h-[80svh] min-h-[30rem] w-full overflow-hidden bg-[#141216] text-white max-lg:mt-16"
-    >
-      <div className="hero-media absolute inset-0 will-change-transform">
-        <picture>
-          <source media={PORTRAIT} srcSet={reel.portraitPoster} />
-          {/* Art-directed poster for the film: already a small webp, so it skips the image optimizer. */}
-          <img src={reel.landscapePoster} alt="" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
-        </picture>
-        <video
-          ref={video}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden
-          onPlaying={() => {
-            setPlaying(true);
-            setShown(true);
-          }}
-          onPause={() => setPlaying(false)}
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1.4s]"
-          style={{ opacity: shown ? 1 : 0 }}
-        >
-          <source media={PORTRAIT} src={reel.portrait} type="video/mp4" />
-          <source src={reel.landscape} type="video/mp4" />
-        </video>
-      </div>
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(14,12,16,0.45)_0%,rgba(14,12,16,0.16)_30%,rgba(14,12,16,0.26)_55%,rgba(14,12,16,0.66)_100%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_62%_42%_at_50%_74%,rgba(10,8,12,0.5),transparent_72%)]" />
-
-      <div className="absolute inset-x-0 bottom-[clamp(4.5rem,15%,9rem)] flex flex-col items-center px-6 text-center">
-        <p className="hero-in font-sans text-[0.74rem] font-medium tracking-[0.16em] text-white/85 uppercase">{collectionMeta.eyebrow}</p>
-        <h1 className="hero-in mt-3 font-sans text-[clamp(1.4rem,1rem+1.3vw,2rem)] leading-tight font-medium tracking-[0.12em] uppercase">
-          {collectionMeta.title}
-        </h1>
-        <p className="hero-in mt-5 max-w-[37rem] font-sans text-[clamp(0.9rem,0.84rem+0.25vw,1.04rem)] leading-relaxed text-white/88">
-          {collectionMeta.intro}
-        </p>
-      </div>
-
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={playing ? 'Pause the showreel' : 'Play the showreel'}
-        className="absolute bottom-[clamp(1.5rem,4vh,2.5rem)] left-[clamp(1rem,3vw,2.75rem)] grid size-11 place-items-center text-white/90 transition-opacity hover:text-white"
-      >
-        {playing ? <Pause className="size-4 fill-current" strokeWidth={0} /> : <Play className="size-4 fill-current" strokeWidth={0} />}
-      </button>
-
-      <button
-        type="button"
-        onClick={onScrollDown}
-        aria-label="Scroll to the weddings"
-        className="group absolute top-1/2 right-[clamp(1rem,3.4vw,3.25rem)] hidden -translate-y-1/2 flex-col items-center gap-1.5 py-2 sm:flex"
-      >
-        <span className="relative block h-14 w-px overflow-hidden bg-white/30">
-          <span className="absolute inset-x-0 top-0 h-1/2 animate-[hint_2.2s_ease-in-out_infinite] bg-white" />
+    <li className="cw-tile">
+      <div className="group relative">
+        <span className="cw-media bg-[#141216]" style={{ aspectRatio: aspect }}>
+          <span className="cw-img transition-[scale] duration-[1.6s] ease-vow fine:group-hover:scale-[1.045]">
+            {/* Art-directed poster for the reel: already a small webp, so it skips the image optimizer. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={reel.portraitPoster} alt="" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
+            <video
+              ref={video}
+              src={reel.portrait}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden
+              onPlaying={() => {
+                setPlaying(true);
+                setShown(true);
+              }}
+              onPause={() => setPlaying(false)}
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[1.4s]"
+              style={{ opacity: shown ? 1 : 0 }}
+            />
+          </span>
+          <button
+            type="button"
+            onClick={onFilms}
+            data-cursor="play"
+            data-cursor-label="The films"
+            aria-label="Watch the films"
+            className="absolute inset-0 z-1"
+          />
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={playing ? 'Pause the showreel' : 'Play the showreel'}
+            className="absolute bottom-[4%] left-[4%] z-2 grid size-10 place-items-center rounded-full bg-black/25 text-white backdrop-blur-sm transition-colors hover:bg-black/40"
+          >
+            {playing ? <Pause className="size-3.5 fill-current" strokeWidth={0} /> : <Play className="ml-0.5 size-3.5 fill-current" strokeWidth={0} />}
+          </button>
         </span>
-        <svg viewBox="0 0 10 7" className="w-2.5 text-white transition-transform duration-500 group-hover:translate-y-0.5" aria-hidden>
-          <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.2" />
-        </svg>
-      </button>
+        <button type="button" onClick={onFilms} tabIndex={-1} aria-hidden className="cw-cap w-full text-left">
+          <span className="cw-cap-name">The showreel</span>
+          <span className="inline-flex items-center gap-1 opacity-50">
+            The films <ArrowUpRight className="size-[1.1em]" strokeWidth={1.4} />
+          </span>
+        </button>
+      </div>
+    </li>
+  );
+}
+
+/**
+ * The collection opens like a gallery wall: its name set huge, and the weddings rising over it in staggered columns.
+ * Each column trails the scroll by its own small amount, so the wall ripples as it moves and settles when it stops.
+ */
+export default function CollectionHero({ onScrollDown, onFilms }: { onScrollDown: () => void; onFilms: () => void }) {
+  const ref = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      const el = ref.current;
+      if (!el) return;
+      const mm = gsap.matchMedia();
+      mm.add(MOTION_OK, () => {
+        const q = gsap.utils.selector(el);
+
+        // Arrival: the name rises from behind its baseline, then the words around it.
+        gsap.fromTo(q('.cw-mark-inner'), { yPercent: 104 }, { yPercent: 0, duration: 1.5, ease: 'vow', delay: 0.3 });
+        gsap.fromTo(q('.cw-in'), { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 1.1, stagger: 0.08, ease: 'vow', delay: 0.55 });
+
+        // The photographs already on screen develop one after another from the middle out: a wipe up from the bottom
+        // edge while the picture settles. Those further down are simply there when the visitor reaches them; hiding
+        // them until they scroll in would leave holes in the wall on a fast flick.
+        const mid = window.innerWidth / 2;
+        const centre = (t: Element) => {
+          const r = t.getBoundingClientRect();
+          return Math.abs(r.left + r.width / 2 - mid);
+        };
+        const onArrival = gsap.utils
+          .toArray<HTMLElement>(q('.cw-tile'))
+          .filter((t) => {
+            const r = t.getBoundingClientRect();
+            return r.height > 0 && r.top < window.innerHeight;
+          })
+          .sort((a, b) => centre(a) - centre(b));
+        const part = (sel: string) => onArrival.map((t) => t.querySelector(sel)).filter((x): x is Element => !!x);
+        gsap
+          .timeline({ delay: 0.5 })
+          .fromTo(part('.cw-media'), { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.25, ease: 'vowInOut', stagger: 0.1, clearProps: 'clipPath' }, 0)
+          .fromTo(part('.cw-img'), { scale: 1.18 }, { scale: 1, duration: 1.7, ease: 'vow', stagger: 0.1, clearProps: 'transform' }, 0)
+          .fromTo(part('.cw-cap'), { opacity: 0 }, { opacity: 1, duration: 0.8, ease: 'power1.out', stagger: 0.1 }, 0.55);
+
+        // The name drifts slower than the page, so the wall slides up over it.
+        gsap.to(q('.cw-mark'), {
+          y: () => window.innerHeight * 0.32,
+          ease: 'none',
+          scrollTrigger: { trigger: el, start: 'top top', end: () => `+=${window.innerHeight}`, scrub: true, invalidateOnRefresh: true },
+        });
+
+        // Each column trails the scroll by its own amount (the middle one runs a little ahead) and settles when it
+        // stops, so the wall ripples as it moves. tanh eases the offsets toward a ceiling instead of clipping them,
+        // so a fast flick keeps the columns apart rather than flattening them all to the same limit.
+        const MAX = 64;
+        const cols = gsap.utils.toArray<HTMLElement>(q('.cw-col'));
+        const follow = cols.map((c, i) => gsap.quickTo(c, 'y', { duration: WALL[i].lag[1], ease: 'power3.out' }));
+        let onScreen = false;
+        const io = new IntersectionObserver(([e]) => (onScreen = e.isIntersecting));
+        io.observe(el);
+        let last = 0;
+        const tick = () => {
+          if (!onScreen) return;
+          const v = live.lenis?.velocity ?? 0;
+          if (v === 0 && last === 0) return;
+          last = v;
+          cols.forEach((_, i) => follow[i](MAX * Math.tanh((v * WALL[i].lag[0]) / MAX)));
+        };
+        gsap.ticker.add(tick);
+        return () => {
+          gsap.ticker.remove(tick);
+          io.disconnect();
+        };
+      });
+    },
+    { scope: ref },
+  );
+
+  return (
+    <section ref={ref} aria-labelledby="cw-title" className="cw" style={{ background: C.paper, color: C.ink }}>
+      <div className="cw-intro">
+        <p className="cw-in eyebrow text-[0.62rem] opacity-60">Chapter · The Saptapadi</p>
+        <div className="cw-in">
+          <p className="cw-tagline">{collectionMeta.tagline}</p>
+          <button type="button" onClick={onScrollDown} className="nav-link mt-4 inline-flex items-center gap-1.5 text-[0.74rem] tracking-[0.14em]">
+            All {weddings.length} weddings <ArrowDown className="size-[1.05em]" strokeWidth={1.4} />
+          </button>
+        </div>
+      </div>
+
+      <h1 id="cw-title" className="cw-mark">
+        <span className="sr-only">{collectionMeta.title}</span>
+        <span className="cw-mark-inner" aria-hidden>
+          {collectionMeta.mark}
+        </span>
+      </h1>
+
+      <div className="cw-wall">
+        {WALL.map((col) => (
+          <ul key={col.id} className="cw-col" data-col={col.id}>
+            {col.cells.map((cell, j) =>
+              'reel' in cell ? (
+                <ReelTile key="reel" aspect={cell.aspect} onFilms={onFilms} />
+              ) : (
+                <WeddingTile key={cell.slug} slug={cell.slug} frame={cell.frame} aspect={cell.aspect} eager={j === 0} />
+              ),
+            )}
+          </ul>
+        ))}
+      </div>
     </section>
   );
 }

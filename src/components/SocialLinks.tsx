@@ -22,6 +22,23 @@ export function YouTubeIcon({ className = 'size-4' }: IconProps) {
   );
 }
 
+/**
+ * YouTube's own play-button mark in its brand colours, for calls to action that send people to the channel: the red
+ * is what makes a link read as YouTube at a glance. The quiet social pills keep the line icon above, so every
+ * network there shares one style.
+ */
+export function YouTubeLogo({ className = 'h-5 w-auto' }: IconProps) {
+  return (
+    <svg viewBox="0 0 28.57 20" className={className} aria-hidden>
+      <path
+        fill="#FF0000"
+        d="M27.97 3.12C27.64 1.89 26.68.93 25.45.6 23.22 0 14.29 0 14.29 0S5.35 0 3.12.6C1.89.93.93 1.89.6 3.12 0 5.35 0 10 0 10s0 4.65.6 6.88c.33 1.23 1.29 2.19 2.52 2.52C5.35 20 14.29 20 14.29 20s8.93 0 11.16-.6c1.23-.33 2.19-1.29 2.52-2.52.6-2.23.6-6.88.6-6.88s0-4.65-.6-6.88Z"
+      />
+      <path fill="#FFFFFF" d="M11.43 14.29 18.85 10l-7.42-4.28v8.57Z" />
+    </svg>
+  );
+}
+
 export function WhatsAppIcon({ className = 'size-4' }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" className={className} aria-hidden>

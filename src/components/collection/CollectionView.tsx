@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import Footer from '@/components/Footer';
-import SocialLinks, { YouTubeIcon } from '@/components/SocialLinks';
+import SocialLinks, { YouTubeLogo } from '@/components/SocialLinks';
 import { Flip, gsap, observeReveal } from '@/lib/gsap';
 import { live } from '@/lib/stage-store';
 import { curtainClick, LABELS } from '@/lib/curtain';
@@ -109,7 +109,7 @@ export default function CollectionView() {
   return (
     <main id="collection" className="relative min-h-screen" style={{ background: C.paper, color: C.ink, overflowAnchor: 'none' }}>
       <CollectionHeader variant="overlay" view={view} onSelectView={switchView} />
-      <CollectionHero onScrollDown={() => live.lenis?.scrollTo(gridTop(), { duration: 1.3 })} />
+      <CollectionHero onScrollDown={() => live.lenis?.scrollTo(gridTop(), { duration: 1.3 })} onFilms={() => switchView('films')} />
 
       <section aria-label={view === 'weddings' ? 'Weddings' : 'Films'} className="relative pb-[clamp(4rem,10vh,7rem)]">
         <FilterBar
@@ -150,14 +150,21 @@ export default function CollectionView() {
           {view === 'films' && counts.films > 0 && (
             <div className="mt-14 flex flex-col items-center gap-4 px-6 text-center">
               <p className="serif-italic text-[clamp(1.5rem,1.2rem+1vw,2.1rem)] leading-tight">More of our films live on YouTube.</p>
+              {/* YouTube's red play mark on the night pill, so the button reads as YouTube before the label is read. */}
               <a
                 href={site.contact.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-12 items-center gap-3 border px-6 font-sans text-[0.72rem] tracking-[0.14em] uppercase transition-colors hover:bg-black/[0.04]"
-                style={{ borderColor: `${C.ink}40` }}
+                className="group mt-2 inline-flex h-14 items-center gap-3.5 rounded-full pr-6 pl-5 font-sans text-[0.74rem] font-medium tracking-[0.14em] uppercase shadow-[0_18px_36px_-22px_rgba(0,0,0,0.55)] transition-opacity duration-300 hover:opacity-90"
+                style={{ background: C.night, color: C.paper }}
               >
-                <YouTubeIcon className="size-4" /> Watch on YouTube <ArrowUpRight className="size-4" strokeWidth={1.4} />
+                <YouTubeLogo className="h-[1.4rem] w-auto transition-transform duration-500 ease-vow group-hover:scale-110" />
+                Watch on YouTube
+                <ArrowUpRight
+                  className="size-4 opacity-60 transition-transform duration-500 ease-vow group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                  strokeWidth={1.4}
+                />
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </div>
           )}

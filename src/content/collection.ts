@@ -37,6 +37,9 @@ export type Wedding = {
 export const collectionMeta = {
   eyebrow: 'Seven Vow Stories',
   title: 'Chapter: The Saptapadi',
+  /** Set huge across the top of the collection page. */
+  mark: 'Saptapadi',
+  tagline: 'Weddings across India, each filmed and photographed as its own story.',
   intro:
     'Chapter: The Saptapadi spans twelve weddings across India, from haldi mornings and monsoon pheras to palace evenings and lamplit ghats. Each one is filmed and photographed as its own story. One collection, as many versions of a wedding as there are couples.',
   reel: {

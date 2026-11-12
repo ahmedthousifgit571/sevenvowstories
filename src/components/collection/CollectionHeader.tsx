@@ -101,11 +101,12 @@ export default function CollectionHeader({ variant, view = 'weddings', onSelectV
   return (
     <>
       {/* ---------- Desktop ---------- */}
+      {/* The overlay sits in ink on the collection's light wall; the solid bar is night with paper type. */}
       <header
         ref={ref}
-        data-tone="dark"
-        className={`z-30 hidden text-[#f5f1ea] lg:block ${overlay ? 'absolute inset-x-0 top-0' : 'relative'}`}
-        style={{ background: overlay ? 'linear-gradient(rgba(14,12,16,0.55), rgba(14,12,16,0))' : C.night }}
+        data-tone={overlay ? undefined : 'dark'}
+        className={`z-30 hidden lg:block ${overlay ? 'absolute inset-x-0 top-0' : 'relative'}`}
+        style={overlay ? { color: C.ink } : { background: C.night, color: '#f5f1ea' }}
       >
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-6 px-8 pt-6">
           <nav aria-label="Studio" className="flex items-center gap-7 justify-self-start">
